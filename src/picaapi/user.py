@@ -6,15 +6,16 @@ class User:
     '''
     用户信息。
     '''
-    def __init__(self, info):
-        self.avatar = Picture(info['avatar'])
+    def __init__(self, info: dict):
+        # TODO: 这个不返回avatar的情况怎么办啊
+        self.avatar = Picture(info['avatar']) if 'avatar' in info else None
         self.characters = info['characters']
         self.exp = info['exp']
         self.gender = info['gender']
         self.level = info['level']
         self.name = info['name']
         self.role = info['role']
-        self.slogan = info['slogan']
+        self.slogan = info['slogan'] if 'slogan' in info else ''
         self.title = info['title']
         self.verified = info['verified']
         self.id = info['_id']

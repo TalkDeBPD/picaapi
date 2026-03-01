@@ -1,6 +1,7 @@
 from .base import *
 from .user import *
 from .comic import *
+from .comment import *
 
 
 class Client:
@@ -25,8 +26,12 @@ class Client:
     def comic(self, id: str) -> ComicDetailed:
         return ComicDetailed(makeAPIRequest(self.domain, f'comics/{id}', token=self.token)['comic'])
     
-    def advancedSearch(self, keyword:str, sort:str, page:int = 1, categories:list[str] = []) -> ComicListPage:
+    def advancedSearch(self, keyword:str, categories:list[str] = [], sort:str = 'dd', page:int = 1) -> ComicListPage:
         json_map:dict[str, str|list[str]] = { 'keyword': keyword, 'sort': sort }
         if categories != []: json_map['categories'] = categories
-        request = makeAPIRequest(self.domain, f'comics/advanced-search?page={page}&s={sort}', 'POST', json_map, self.token)
-        return ComicListPage(request['comics'])
+        response = makeAPIRequest(self.domain, f'comics/advanced-search?page={page}&s={sort}', 'POST', json_map, self.token)
+        return ComicListPage(response['comics'])
+    
+    def comments(self, comic:str, page:int = 1) -> CommentPage:
+        response = makeAPIRequest(self.domain, f"comics/{comic}/comments?page={page}", token=self.token)
+        return CommentPage(response['comments'])

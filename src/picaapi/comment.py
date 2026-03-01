@@ -6,7 +6,6 @@ class Comment:
     单条评论。
     '''
     def __init__(self, info):
-        self.comic = info['comic']
         self.isTop = info['isTop']
         self.hide = info['hide']
         self.created_at = datetime.fromisoformat(info['created_at']).timestamp()
