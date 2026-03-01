@@ -3,7 +3,10 @@ from .picture import *
 
 
 class User:
-    def __init__(self, info) -> None:
+    '''
+    用户信息。
+    '''
+    def __init__(self, info):
         self.avatar = Picture(info['avatar'])
         self.characters = info['characters']
         self.exp = info['exp']
@@ -18,7 +21,10 @@ class User:
 
 
 class Profile(User):
-    def __init__(self, info) -> None:
+    '''
+    当前登录账号的个人信息。
+    '''
+    def __init__(self, info):
         User.__init__(self, info)
         self.isPunched = info['isPunched']
         self.birthday = datetime.fromisoformat(info['birthday']).timestamp()

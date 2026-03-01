@@ -5,5 +5,5 @@ class Picture:
         self.path = info['path']
     
     @property
-    def url(self):
+    def url(self) -> str:
         return self.fileServer + '/' + self.path
