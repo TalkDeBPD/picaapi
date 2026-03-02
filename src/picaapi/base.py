@@ -5,7 +5,16 @@ import niquests
 from .error import *
 
 
-def randomStr(length=32) -> str:
+def randomStr(length = 32) -> str:
+    '''
+    生成随机的Nonce字串。
+
+    Args:
+        length(str, optional): 字串长度，默认32
+
+    Returns:
+        str: Nonce字串
+    '''
     lib = 'ABCDEFGHJKMNPQRSTWXYZabcdefhijkmnprstwxyz2345678'
     result = ''
     for i in range(0, length):
@@ -14,6 +23,18 @@ def randomStr(length=32) -> str:
 
 
 def makeSignature(dir: str, time: str, method: str, nonce: str) -> str:
+    '''
+    生成哔咔API签名。
+
+    Args:
+        dir(str): 请求路径（包含URL参数，没有前导斜杠）
+        time(str): 以秒计的时间戳
+        method(str): 请求方法
+        nonce(str): 随机密钥
+    
+    Returns:
+        str: Signature签名
+    '''
     ready = dir + time + nonce + method + 'C69BAF41DA5ABD1FFEDC6D2FEA56B'
     rb = ready.lower().encode()
     key = b'~d}$Q7$eIni=V)9\\RK/P.RM4;9[7|@/CA}b~OW!3?EV`:<>M7pddUBL5n|0/*Cn\0'
@@ -25,6 +46,17 @@ def makeSignature(dir: str, time: str, method: str, nonce: str) -> str:
 
 
 def makeHeaders(dir: str, method: str, authorization: str | None = None) -> dict:
+    '''
+    生成哔咔API请求头。
+
+    Args:
+        dir(str): 请求路径（包含URL参数，没有前导斜杠）
+        method(str): 请求方法
+        authorization(str, optional): 登录用户token，默认为None，注意除注册登录外不可为None
+
+    Returns:
+        dict: 构造的headers
+    '''
     sTime = str(int(time.time()))
     nonce = randomStr()
     signature = makeSignature(dir, sTime, method, nonce)
@@ -43,21 +75,28 @@ def makeHeaders(dir: str, method: str, authorization: str | None = None) -> dict
         'Nonce': nonce,
         'Signature': signature,
         'Origin': 'https://manhuabika.com',
-        'sec-ch-ua': '"Not:A-Brand";v="99", "Microsoft Edge";v="145", "Chromium";v="145"',
-        'sec-ch-ua-mobile': '?0',
-        'sec-ch-ua-platform': '"Windows"',
-        'sec-fetch-dest': 'empty',
-        'sec-fetch-mode': 'cors',
-        'sec-fetch-site': 'cross-site',
         'Referer': 'https://manhuabika.com/',
         'Authorization': authorization
     }
     return headers
 
 
-def makeAPIRequest(domain: str, dir: str, method: str='GET', json = None, token: str | None = None):
+def makeAPIRequest(domain: str, dir: str, method: str='GET', json:dict|None = None, token: str | None = None):
     '''
-    通用哔咔API请求函数
+    通用哔咔API请求函数，封装了签名认证与异常处理。
+
+    Args:
+        domain (str): 哔咔API域名
+        dir (str): 请求路径（包含URL参数，没有前导斜杠）
+        method (str, optional): 请求方法，默认为GET
+        json (dict): 请求负载，默认为None
+        token (str): 用户令牌，默认为None，注意除注册登录外都不可为None
+
+    Returns:
+        dict: 返回数据data
+    
+    Raises:
+        PicaAPIError: 请求失败
     '''
     response = niquests.request(method, 'https://picaapi.' + domain + '/' + dir, json=json, headers=makeHeaders(dir, method, token))
     if response.json()['code'] != 200:
