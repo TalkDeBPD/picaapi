@@ -171,6 +171,31 @@ class Client:
         response = makeAPIRequest(self.domain, f'comics/leaderboard?tt={tt}&ct=VC', token=self.token)
         return [Comic(comic) for comic in response['comics']]
 
+    def categories(self) -> list[Category]:
+        '''
+        获取哔咔分类。
+
+        Returns:
+            list[Category]: 分类列表
+        '''
+        response = makeAPIRequest(self.domain, 'categories', token=self.token)
+        return [Category(cate) for cate in response['categories']]
+
+    def categoryComic(self, category: str, sort: str = 'dd', page: int = 1) -> Page:
+        '''
+        从分类获取漫画列表。
+
+        Args:
+            category(str): 分类名称
+            sort(str, optional): 排序方式，默认为dd（新到旧）
+            page(int, optional): 分页页码，默认为1
+
+        Returns:
+            Page: 返回结果页，数据类型为Comic
+        '''
+        response = makeAPIRequest(self.domain, f'comics?page={page}&s={sort}&c={category}', token=self.token)
+        return Page(response['comics'], Comic)
+
     def likeComic(self, comic_id: str) -> None:
         '''
         点赞漫画。

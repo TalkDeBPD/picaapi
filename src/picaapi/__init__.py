@@ -1,3 +1,5 @@
+''' 这个，不需要了
+
 from .client import *
 from .objects import *
 from .error import * 
@@ -13,6 +15,9 @@ __all__ = [
     'Comic',
     'ComicDetailed',
     'Page',
+    'Category',
     'PicaAPIError',
     'Downloader'
 ]
+
+'''

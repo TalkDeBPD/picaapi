@@ -14,11 +14,11 @@ class Page:
     '''
 
     def __init__(self, info: dict, constructor):
-        self.docs = [constructor(i) for i in info['docs']]
-        self.page = int(info['page']) # 有的返回会出现字符串
-        self.pages = info['pages']
-        self.total = info['total']
-        self.limit = info['limit']
+        self.docs: list = [constructor(i) for i in info['docs']]
+        self.page: int = int(info['page']) # 有的返回会出现字符串
+        self.pages: int = info['pages']
+        self.total: int = info['total']
+        self.limit: int = info['limit']
 
 
 class Picture:
@@ -32,9 +32,9 @@ class Picture:
     '''
     
     def __init__(self, info: dict):
-        self.fileServer = info['fileServer']
-        self.originalName = info['originalName']
-        self.path = info['path']
+        self.fileServer: str = info['fileServer']
+        self.originalName: str = info['originalName']
+        self.path: str = info['path']
     
     def url(self, server: str = '') -> str:
         '''
@@ -42,6 +42,9 @@ class Picture:
 
         Args:
             server(str, optional): 指定的图片服务器，如果为空则为默认服务器
+        
+        Returns:
+            str: 指定图片服务器的URL
         '''
 
         if server == '': server = self.fileServer
@@ -60,7 +63,7 @@ class ComicPicture(Picture):
 
     def __init__(self, info: dict):
         Picture.__init__(self, info['media'])
-        self.id = info['_id']
+        self.id: str = info['_id']
 
 
 class User:
@@ -70,17 +73,17 @@ class User:
 
     def __init__(self, info: dict):
         # TODO: 这个不返回avatar的情况怎么办啊
-        self.avatar = Picture(info['avatar']) if 'avatar' in info else None
-        self.characters = info['characters']
-        self.exp = info['exp']
-        self.gender = info['gender']
-        self.level = info['level']
-        self.name = info['name']
-        self.role = info['role']
-        self.slogan = info['slogan'] if 'slogan' in info else ''
-        self.title = info['title']
-        self.verified = info['verified']
-        self.id = info['_id']
+        self.avatar: Picture | None = Picture(info['avatar']) if 'avatar' in info else None
+        self.characters: list[str] = info['characters']
+        self.exp: int = info['exp']
+        self.gender: str = info['gender']
+        self.level: int = info['level']
+        self.name: str = info['name']
+        self.role: str = info['role']
+        self.slogan: str = info['slogan'] if 'slogan' in info else ''
+        self.title: str = info['title']
+        self.verified: bool = info['verified']
+        self.id: str = info['_id']
 
 
 class Profile(User):
@@ -90,9 +93,9 @@ class Profile(User):
 
     def __init__(self, info):
         User.__init__(self, info)
-        self.isPunched = info['isPunched']
-        self.birthday = datetime.fromisoformat(info['birthday']).timestamp()
-        self.created_at = datetime.fromisoformat(info['created_at']).timestamp()
+        self.isPunched: bool = info['isPunched']
+        self.birthday: float = datetime.fromisoformat(info['birthday']).timestamp()
+        self.created_at: float = datetime.fromisoformat(info['created_at']).timestamp()
 
 
 class Comment:
@@ -108,16 +111,16 @@ class Comment:
             info: (dict[str, Any]): 单条comment的JSON字典
         '''
 
-        self.isTop = info['isTop']
-        self.hide = info['hide']
-        self.created_at = datetime.fromisoformat(info['created_at']).timestamp()
-        self.id = info['id']
-        self.isLiked = info['isLiked']
-        self.comic = info['_comic']
-        self.likes = info['likesCount']
-        self.comments = info.get('commentsCount', info['totalComments'])
-        self.content = info['content']
-        self.user = User(info['_user'])
+        self.isTop: bool = info['isTop']
+        self.hide: bool = info['hide']
+        self.created_at: float = datetime.fromisoformat(info['created_at']).timestamp()
+        self.id: str = info['id']
+        self.isLiked: bool = info['isLiked']
+        self.comic: str = info['_comic']
+        self.likes: int = info['likesCount']
+        self.comments: int = info.get('commentsCount', info['totalComments'])
+        self.content: str = info['content']
+        self.user: User = User(info['_user'])
 
 
 class Comic:
@@ -133,44 +136,61 @@ class Comic:
         thumb(Picture): 封面
         views(int): 浏览次数（绅士指名数）
         likes(int): 赞数
+        pagesCount(int): 页数
+        epsCount(int): 集数
         finished(bool): 完结情况
     '''
 
     def __init__(self, info: dict):
-        self.author = info['author']
-        self.categories = info['categories']
-        self.finished = info['finished']
-        self.likes = info.get('likesCount', info.get('totalLikes', 0))
-        self.tags = info['tags']
-        self.thumb = Picture(info['thumb'])
-        self.title = info['title']
-        self.views = info.get('totalViews', 0)
-        self.id = info['_id']
+        self.author: str = info['author']
+        self.categories: list[str] = info['categories']
+        self.finished: bool = info['finished']
+        self.likes: int = info.get('likesCount', info.get('totalLikes', 0))
+        self.tags: list[str] = info['tags']
+        self.thumb: Picture = Picture(info['thumb'])
+        self.title: str = info['title']
+        self.views: int = info.get('totalViews', 0)
+        self.pagesCount: int = info.get('pagesCount', 0)
+        self.epsCount: int = info.get('epsCount', 0)
+        self.id: str = info['_id']
 
 
 class ComicDetailed(Comic):
     '''
     存储漫画完整信息，用于漫画详情页。
     '''
+
     def __init__(self, info: dict):
         Comic.__init__(self, info)
-        self.description = info['description']
-        self.creator = User(info['_creator'])
-        self.chineseTeam = info['chineseTeam']
-        self.epsCount = info['epsCount']
-        self.pagesCount = info['pagesCount']
-        self.updated_at = datetime.fromisoformat(info['updated_at']).timestamp
-        self.created_at = datetime.fromisoformat(info['created_at']).timestamp
-        self.isFavourite = info['isFavourite']
-        self.isLiked = info['isLiked']
+        self.description: str = info['description']
+        self.creator: User = User(info['_creator'])
+        self.chineseTeam: str = info['chineseTeam']
+        self.updated_at: float = datetime.fromisoformat(info['updated_at']).timestamp()
+        self.created_at: float = datetime.fromisoformat(info['created_at']).timestamp()
+        self.isFavourite: bool = info['isFavourite']
+        self.isLiked: bool = info['isLiked']
 
 
 class Eps:
     '''
     存储漫画单话信息。
     '''
+
     def __init__(self, info: dict):
-        self.id = info['_id']
-        self.order = info['order']
-        self.title = info['title']
-        self.updated_at = datetime.fromisoformat(info['updated_at']).timestamp()
+        self.id: str = info['_id']
+        self.order: int = info['order']
+        self.title: str = info['title']
+        self.updated_at: float = datetime.fromisoformat(info['updated_at']).timestamp()
+
+
+class Category:
+    '''
+    存储分类信息。
+    '''
+
+    def __init__(self, info: dict):
+        self.active: bool = info['active']
+        self.isWeb: bool = info['isWeb']
+        self.link: str | None = info.get('link', None)
+        self.thumb: Picture = Picture(info['thumb'])
+        self.title: str = info['title']
