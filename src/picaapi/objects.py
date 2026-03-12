@@ -1,20 +1,24 @@
 from datetime import datetime
+from typing import TypeVar, Generic, Callable
 
 
-class Page:
+T = TypeVar('T')
+
+
+class Page(Generic[T]):
     '''
     用于存储哔咔API分页返回的信息。
 
     Attributes:
-        docs(list): 本页内容，具体元素类型与调用方法有关。
+        docs(list[T]): 本页内容，具体元素类型与调用方法有关。
         limit(int): 一页的最大可承载数量
         page(int): 页码
         pages(int): 全部页码
         total(int): 总内容量
     '''
 
-    def __init__(self, info: dict, constructor):
-        self.docs: list = [constructor(i) for i in info['docs']]
+    def __init__(self, info: dict, constructor: Callable[[dict], T]):
+        self.docs: list[T] = [constructor(i) for i in info['docs']]
         self.page: int = int(info['page']) # 有的返回会出现字符串
         self.pages: int = info['pages']
         self.total: int = info['total']
