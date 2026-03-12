@@ -1,11 +1,10 @@
-import time
-import random
 import hashlib
-from .error import *
+import random
+import time
 
 
-def randomStr(length = 32) -> str:
-    '''
+def random_str(length = 32) -> str:
+    """
     生成随机的Nonce字串。
 
     Args:
@@ -13,7 +12,7 @@ def randomStr(length = 32) -> str:
 
     Returns:
         str: Nonce字串
-    '''
+    """
     lib = 'ABCDEFGHJKMNPQRSTWXYZabcdefhijkmnprstwxyz2345678'
     result = ''
     for _ in range(0, length):
@@ -21,20 +20,20 @@ def randomStr(length = 32) -> str:
     return result
 
 
-def makeSignature(dir: str, time: str, method: str, nonce: str) -> str:
-    '''
+def make_signature(url_dir: str, stime: str, method: str, nonce: str) -> str:
+    """
     生成哔咔API签名。
 
     Args:
-        dir(str): 请求路径（包含URL参数，没有前导斜杠）
-        time(str): 以秒计的时间戳
+        url_dir(str): 请求路径（包含URL参数，没有前导斜杠）
+        stime(str): 以秒计的时间戳
         method(str): 请求方法
         nonce(str): 随机密钥
-    
+
     Returns:
         str: Signature签名
-    '''
-    ready = dir + time + nonce + method + 'C69BAF41DA5ABD1FFEDC6D2FEA56B'
+    """
+    ready = url_dir + stime + nonce + method + 'C69BAF41DA5ABD1FFEDC6D2FEA56B'
     rb = ready.lower().encode()
     key = b'~d}$Q7$eIni=V)9\\RK/P.RM4;9[7|@/CA}b~OW!3?EV`:<>M7pddUBL5n|0/*Cn\0'
     a = bytes(92 ^ b for b in key)
@@ -44,22 +43,22 @@ def makeSignature(dir: str, time: str, method: str, nonce: str) -> str:
     return m.hexdigest()
 
 
-def makeHeaders(dir: str, method: str, authorization: str | None = None, quality: str = 'medium') -> dict:
-    '''
+def make_headers(url_dir: str, method: str, authorization: str | None = None, quality: str = 'medium') -> dict:
+    """
     生成哔咔API请求头。
 
     Args:
-        dir(str): 请求路径（包含URL参数，没有前导斜杠）
+        url_dir(str): 请求路径（包含URL参数，没有前导斜杠）
         method(str): 请求方法
         authorization(str, optional): 登录用户token，默认为None，注意除注册登录外不可为None
         quality(str, optional): 图像品质，可选项：low, medium, high, original，默认为medium
 
     Returns:
         dict: 构造的headers
-    '''
-    sTime = str(int(time.time()))
-    nonce = randomStr()
-    signature = makeSignature(dir, sTime, method, nonce)
+    """
+    stime = str(int(time.time()))
+    nonce = random_str()
+    signature = make_signature(url_dir, stime, method, nonce)
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0',
         'Accept': 'application/vnd.picacomic.com.v1+json',
@@ -69,7 +68,7 @@ def makeHeaders(dir: str, method: str, authorization: str | None = None, quality
         'App-Platform': 'android',
         'App-Uuid': 'webUUIDv2',
         'App-Version': '20251017',
-        'Time': sTime,
+        'Time': stime,
         'Image-Quality': quality,
         'Content-Type': 'application/json; charset=UTF-8',
         'Nonce': nonce,
@@ -77,6 +76,6 @@ def makeHeaders(dir: str, method: str, authorization: str | None = None, quality
         'Origin': 'https://manhuabika.com',
         'Referer': 'https://manhuabika.com/',
     }
-    if authorization != None:
+    if authorization is not None:
         headers['Authorization'] = authorization
     return headers
