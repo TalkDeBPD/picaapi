@@ -150,7 +150,7 @@ class Comic:
         self.categories: list[str] = info['categories']
         self.finished: bool = info['finished']
         self.likes: int = info.get('likesCount', info.get('totalLikes', 0))
-        self.tags: list[str] = info['tags']
+        self.tags: list[str] = info.get('tags', [])
         self.thumb: Picture = Picture(info['thumb'])
         self.title: str = info['title']
         self.views: int = info.get('totalViews', 0)
@@ -193,8 +193,8 @@ class Category:
     """
 
     def __init__(self, info: dict):
-        self.active: bool = info['active']
-        self.isWeb: bool = info['isWeb']
+        #self.active: bool = info['active']
+        self.isWeb: bool = info.get('isWeb', False)
         self.link: str | None = info.get('link', None)
         self.thumb: Picture = Picture(info['thumb'])
         self.title: str = info['title']

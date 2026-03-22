@@ -6,6 +6,7 @@ from httpx import HTTPError
 from .client import *
 from .objects import Picture
 
+
 DEFAULT_HEADERS: dict[str, str] = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0',
     'Accept': 'image/*',
@@ -29,7 +30,7 @@ class PictureClient:
         """
         if headers is None:
             headers = DEFAULT_HEADERS
-        self.client = AsyncClient(base_url=base_url, headers=headers, limits=Limits(max_connections=max_conn), follow_redirects=True)
+        self.client = AsyncClient(base_url=base_url, headers=headers, limits=Limits(max_connections=max_conn), follow_redirects=True, timeout=(5.0, 30.0, 5.0, 5.0))
         self.closed = False
 
     async def aclose(self) -> None:
