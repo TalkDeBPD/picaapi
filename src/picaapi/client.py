@@ -1,5 +1,3 @@
-from warnings import deprecated
-
 from httpx import AsyncClient, Limits
 from urllib import parse
 from .base import *
@@ -56,7 +54,6 @@ class Client:
             method(str): 请求方法
             url(str): 请求路径（包含URL参数，没有前导斜杠）
             json(dict, optional): 请求负载，默认为None
-            params(dict, optioanl): 请求参数，默认为None
 
         Returns:
             dict: 返回数据data
@@ -185,7 +182,7 @@ class Client:
         Returns:
             Page: 返回结果页，数据类型为Eps
         """
-        response = await self.request('GET', f'comics/{comic_id}/rps?page={page}')
+        response = await self.request('GET', f'comics/{comic_id}/eps?page={page}')
         return Page(response['eps'], Eps)
     
     async def pages(self, comic_id: str, order: int = 1, page: int = 1) -> Page:
@@ -241,21 +238,6 @@ class Client:
         """
         response = await self.request('GET', f'comics?page={page}&s={sort}&{key}={parse.quote(value)}')
         return Page(response['comics'], Comic)
-
-    @deprecated('这个有bug！')
-    async def category_comics(self, category: str, sort: str = 'dd', page: int = 1) -> Page[Comic]:
-        """
-        从分类获取漫画列表。
-
-        Args:
-            category(str): 分类名称
-            sort(str, optional): 排序方式，默认为dd（新到旧）
-            page(int, optional): 分页页码，默认为1
-
-        Returns:
-            Page[Comic]: 返回结果页，
-        """
-        return await self.comics('c', category, sort, page)
 
     async def like_comic(self, comic_id: str) -> None:
         """

@@ -62,7 +62,7 @@ def make_headers(url_dir: str, method: str, authorization: str | None = None, qu
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0',
         'Accept': 'application/vnd.picacomic.com.v1+json',
-        'Accept-Encoding': 'gzip, deflate, br',
+        'Accept-Encoding': 'gzip, deflate',
         'Accept-Language': 'zh-CN, zh; q=0.9, en; q=0.8',
         'App-Channel': '1',
         'App-Platform': 'android',
