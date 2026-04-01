@@ -86,7 +86,7 @@ class User:
         self.role: str = info['role']
         self.slogan: str = info['slogan'] if 'slogan' in info else ''
         self.title: str = info['title']
-        self.verified: bool = info['verified']
+        self.verified: bool = info.get('verified', False)
         self.id: str = info['_id']
 
 
@@ -118,11 +118,11 @@ class Comment:
         self.isTop: bool = info['isTop']
         self.hide: bool = info['hide']
         self.created_at: float = datetime.fromisoformat(info['created_at']).timestamp()
-        self.id: str = info['id']
+        self.id: str = info['_id']
         self.isLiked: bool = info['isLiked']
         self.comic: str = info['_comic']
         self.likes: int = info['likesCount']
-        self.comments: int = info.get('commentsCount', info['totalComments'])
+        self.comments: int = info.get('commentsCount', info.get('totalComments', 0))
         self.content: str = info['content']
         self.user: User = User(info['_user'])
 
@@ -171,6 +171,7 @@ class ComicDetailed(Comic):
         self.chineseTeam: str = info['chineseTeam']
         self.updated_at: float = datetime.fromisoformat(info['updated_at']).timestamp()
         self.created_at: float = datetime.fromisoformat(info['created_at']).timestamp()
+        self.comments: int = info.get('totalComments', 0)
         self.isFavourite: bool = info['isFavourite']
         self.isLiked: bool = info['isLiked']
 

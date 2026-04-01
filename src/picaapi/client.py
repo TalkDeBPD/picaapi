@@ -29,7 +29,7 @@ class Client:
         """
         self.token = token
         self.quality = quality
-        self.client: AsyncClient = AsyncClient(base_url='https://picaapi.' + domain + '/', limits=Limits(max_connections=max_conn))
+        self.client: AsyncClient = AsyncClient(base_url='https://picaapi.' + domain + '/', limits=Limits(max_connections=max_conn), timeout=8.0)
         self.closed = False
 
     async def __aenter__(self):
@@ -185,7 +185,7 @@ class Client:
         response = await self.request('GET', f'comics/{comic_id}/eps?page={page}')
         return Page(response['eps'], Eps)
     
-    async def pages(self, comic_id: str, order: int = 1, page: int = 1) -> Page:
+    async def pages(self, comic_id: str, order: int = 1, page: int = 1) -> tuple[Page[ComicPicture], str]:
         """
         获取漫画内容的图片路径。
 
@@ -196,9 +196,10 @@ class Client:
 
         Returns:
             Page: 返回结果页，数据类型为ComicPicture
+            str: 此话标题
         """
         response = await self.request('GET', f'comics/{comic_id}/order/{order}/pages?page={page}')
-        return Page(response['pages'], ComicPicture)
+        return Page(response['pages'], ComicPicture), response['ep']['title']
 
     async def leaderboard(self, tt: str='H24') -> list[Comic]:
         """
