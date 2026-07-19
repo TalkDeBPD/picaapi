@@ -79,7 +79,7 @@ class Client:
         response = await self.request('POST', 'auth/sign-in', { 'email': email, 'password': password })
         self.token = response['token']
 
-    async def register(self, email: str, password: str, name: str, gender: str, birthday: date, question1: str, answer1: str, question2: str, answer2: str, question3: str, answer3: str) -> None:
+    async def register(self, email: str, password: str, name: str, gender: Gender, birthday: date, question1: str, answer1: str, question2: str, answer2: str, question3: str, answer3: str) -> None:
         """
         登录哔咔并自动保存token。
 
@@ -87,7 +87,7 @@ class Client:
             email(str): 邮箱或用户名
             password(str): 密码
             name(str): 昵称
-            gender(str): 性别，可选m、f、bot
+            gender(Gender): 性别
             birthday(date): 生日，必须满18
             question1(str): 安全问题1
             answer1(str): 安全答案1
@@ -96,7 +96,7 @@ class Client:
             question3(str): 安全问题3
             answer3(str): 安全答案3
         """
-        await self.request('POST', 'auth/register', { 'email': email, 'password': password, 'name': name, 'gender': gender, 'birthday': str(birthday), 'question1': question1, 'answer1': answer1, 'question2': question2, 'answer2': answer2, 'question3': question3, 'answer3': answer3 })
+        await self.request('POST', 'auth/register', { 'email': email, 'password': password, 'name': name, 'gender': gender.value, 'birthday': str(birthday), 'question1': question1, 'answer1': answer1, 'question2': question2, 'answer2': answer2, 'question3': question3, 'answer3': answer3 })
 
     async def profile(self) -> User:
         """

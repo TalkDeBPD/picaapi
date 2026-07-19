@@ -1,5 +1,6 @@
 from datetime import datetime
 from typing import TypeVar, Generic, Callable
+from .base import *
 
 
 T = TypeVar('T')
@@ -80,7 +81,7 @@ class User:
         self.avatar: Picture | None = Picture(info['avatar']) if 'avatar' in info else None
         self.characters: list[str] = info['characters']
         self.exp: int = info['exp']
-        self.gender: str = info['gender']
+        self.gender: Gender = Gender(info['gender'])
         self.level: int = info['level']
         self.name: str = info['name']
         self.role: str = info['role']

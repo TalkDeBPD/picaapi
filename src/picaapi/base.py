@@ -1,6 +1,13 @@
 import hashlib
 import random
 import time
+from enum import Enum
+
+
+class Gender(Enum):
+    MALE = 'm'
+    FEMALE = 'f'
+    BOT = 'bot'
 
 
 def random_str(length = 32) -> str:
