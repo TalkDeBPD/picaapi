@@ -160,7 +160,17 @@ class Comic:
         self.id: str = info['_id']
 
 
-class ComicDetailed(Comic):
+class LeaderboardComic(Comic):
+    """
+    排行榜API的漫画信息。
+    """
+
+    def __init__(self, info: dict):
+        Comic.__init__(self, info)
+        self.leaderboardCount: int = info.get('leaderboardCount', 0)
+
+
+class DetailedComic(Comic):
     """
     存储漫画完整信息，用于漫画详情页。
     """

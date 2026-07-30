@@ -114,7 +114,7 @@ class Client:
         """
         await self.request('POST', 'users/punch-in')
     
-    async def comic(self, comic_id: str) -> ComicDetailed:
+    async def comic(self, comic_id: str) -> DetailedComic:
         """
         获取漫画详细信息。
 
@@ -122,10 +122,10 @@ class Client:
             comic_id(str): 漫画ID
 
         Returns:
-            ComicDetailed: 漫画详细信息
+            DetailedComic: 漫画详细信息
         """
         response = await self.request('GET', f'comics/{comic_id}')
-        return ComicDetailed(response['comic'])
+        return DetailedComic(response['comic'])
     
     async def advanced_search(self, keyword: str, categories: list[str] | None = None, sort: str = 'dd', page: int = 1) -> Page:
         """
@@ -221,7 +221,7 @@ class Client:
         response = await self.request('GET', f'comics/{comic_id}/order/{order}/pages?page={page}')
         return Page(response['pages'], ComicPicture), response['ep']['title']
 
-    async def leaderboard(self, tt: str='H24') -> list[Comic]:
+    async def leaderboard(self, tt: str='H24') -> list[LeaderboardComic]:
         """
         获取哔咔排行榜。
 
@@ -232,7 +232,7 @@ class Client:
             list[Comic]: 排行榜
         """
         response = await self.request('GET', f'comics/leaderboard?tt={tt}&ct=VC')
-        return [Comic(comic) for comic in response['comics']]
+        return [LeaderboardComic(comic) for comic in response['comics']]
 
     async def categories(self) -> list[Category]:
         """
