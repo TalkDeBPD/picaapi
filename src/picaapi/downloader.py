@@ -160,7 +160,7 @@ class Downloader:
             list[bool | BaseException]: 对应于每张图片是否成功下载，会回复下载的错误消息
         """
         
-        p1 = await client.pages(comic_id, order)
+        p1, title = await client.pages(comic_id, order)
         picture_list = p1.docs
         tasks = [client.pages(comic_id, order, i) for i in range(2, p1.pages + 1)]
         pages = await asyncio.gather(*tasks)

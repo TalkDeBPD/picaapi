@@ -1,7 +1,6 @@
 from httpx import AsyncClient, Limits
 from urllib import parse
 from datetime import date
-from .base import *
 from .error import PicaAPIError
 from .objects import *
 
@@ -37,9 +36,9 @@ class Client:
         return self
     
     async def __aexit__(self, *args):
-        await self.close()
+        await self.aclose()
     
-    async def close(self) -> None:
+    async def aclose(self) -> None:
         """
         关闭我。请避免在关闭后再调用。
         """

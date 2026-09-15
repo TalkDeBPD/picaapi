@@ -1,0 +1,26 @@
+[build-system]
+requires = ["hatchling >= 1.26"]
+build-backend = "hatchling.build"
+
+[project]
+name = "picaapi"
+version = "1.0.0"
+description = "API for PicACG"
+dependencies = [
+  "httpx",
+  "brotli",
+]
+authors = [
+    {name = "TalkDe", email = "1160480410@qq.com"}
+]
+readme = "README.md"
+license = "GPL-3.0-or-later"
+license-files = ["LICEN[CS]E.*"]
+keywords = ["picacg", "manga", "comic", "bikabika", "dojin"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Topic :: Internet :: WWW/HTTP",
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+]
