@@ -4,14 +4,11 @@ build-backend = "hatchling.build"
 
 [project]
 name = "picaapi"
-version = "1.0.0"
+version = "1.0.1"
 description = "API for PicACG"
-dependencies = [
-  "httpx",
-  "brotli",
-]
+dependencies = ["httpx"]
 authors = [
-    {name = "TalkDe", email = "1160480410@qq.com"}
+    {name = "TalkDe", email = "1160480410@qq.com"},
 ]
 readme = "README.md"
 license = "GPL-3.0-or-later"
@@ -24,3 +21,6 @@ classifiers = [
     "Topic :: Internet :: WWW/HTTP",
     "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
 ]
+
+[project.optional-dependencies]
+brotli = ["brotli"]
