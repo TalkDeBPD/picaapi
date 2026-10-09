@@ -4,7 +4,6 @@ from httpx import HTTPError
 from abc import abstractmethod, ABC
 from typing import AsyncIterator, Any
 from typing_extensions import override
-
 from .client import *
 from .objects import Picture
 
