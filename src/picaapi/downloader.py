@@ -1,7 +1,9 @@
 import asyncio
 import aiofiles
-from typing import AsyncIterator, Any
 from httpx import HTTPError
+from abc import abstractmethod, ABC
+from typing import AsyncIterator, Any
+from typing_extensions import override
 
 from .client import *
 from .objects import Picture
@@ -17,7 +19,23 @@ DEFAULT_HEADERS: dict[str, str] = {
 DEFAULT_PICTURE_SERVER: list[str] = ['https://storage-b.go2778.com/static/', 'https://storage1.go2778.com/static/']
 
 
-class PictureClient:
+class BasePictureClient(ABC):
+    @abstractmethod
+    async def fetch(self, path: str) -> bytes:
+        pass
+
+    @abstractmethod
+    async def aclose(self):
+        pass
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, *args):
+        await self.aclose()
+
+
+class PictureClient(BasePictureClient):
     """
     图片服务器客户端类。仅可进行简单的图片下载。
     """
@@ -33,17 +51,13 @@ class PictureClient:
         self.client = AsyncClient(base_url=base_url, headers=headers, limits=Limits(max_connections=max_conn), follow_redirects=True, timeout=(5.0, 30.0, 5.0, 5.0))
         self.closed = False
 
+    @override
     async def aclose(self) -> None:
         if not self.closed:
             await self.client.aclose()
             self.closed = True
 
-    async def __aenter__(self):
-        return self
-
-    async def __aexit__(self, *args):
-        await self.aclose()
-
+    @override
     async def fetch(self, path: str) -> bytes:
         """
         请求图片。一次性返回bytes。
@@ -75,37 +89,68 @@ class PictureClient:
                 yield chunk
 
 
-class Downloader:
+class MultiHostPictureClient(BasePictureClient):
     """
-    掌管图片下载类。允许使用多个服务器进行下载。
+    图片服务器客户端类。用于从多个源尝试下载图片。
     """
-
-    def __init__(self, servers: list[str] | None = None, max_conn: int | None = None):
+    def __init__(self, base_urls: list[str] | None = None, headers: dict[str, str] | None = None, max_conn: int | None = None):
         """
         Args:
-            servers(list[str], optional): 服务器根
-            max_conn(int, optional): 最大连接数
+            base_urls(list[str]): 根目录，注意是否有/static/
+            headers(dict[str, str], optional): 请求头，默认为DEFAULT_HEADERS
+            max_conn(int, optional): 最大连接数，建议10，默认遵循httpx
         """
-        if servers is None:
-            servers = DEFAULT_PICTURE_SERVER
-        self.servers = servers
-        self.clients = [PictureClient(base_url=server, max_conn=max_conn) for server in self.servers]
+        self.base_urls = base_urls if base_urls else DEFAULT_PICTURE_SERVER
+        if headers is None:
+            headers = DEFAULT_HEADERS
+        self.client = AsyncClient(headers=headers, limits=Limits(max_connections=max_conn), follow_redirects=True, timeout=(5.0, 30.0, 5.0, 5.0))
         self.closed = False
 
+    @override
     async def aclose(self) -> None:
-        """
-        关闭我。请避免在关闭后再调用。
-        """
         if not self.closed:
-            tasks = [client.aclose() for client in self.clients]
-            await asyncio.gather(*tasks)
+            await self.client.aclose()
             self.closed = True
 
-    async def __aenter__(self):
-        return self
-    
-    async def __aexit__(self, *args):
-        await self.aclose()
+    @override
+    async def fetch(self, path: str) -> bytes:
+        """
+        请求图片。一次性返回bytes。
+
+        Args:
+            path(str): 图片路径
+
+        Returns:
+            bytes: 图片数据
+        """
+        tasks = [asyncio.create_task(self.client.get(parse.urljoin(base_url, path))) for base_url in self.base_urls]
+        last_e = None
+        try:
+            for task in asyncio.as_completed(tasks):
+                try:
+                    response = await task
+                    response.raise_for_status()
+                    return response.content
+                except HTTPError as e:
+                    last_e = e
+        finally:
+            for task in tasks:
+                task.cancel()
+        if last_e: raise last_e
+        return b''
+
+
+class Downloader:
+    """
+    掌管图片下载类。
+    """
+
+    def __init__(self, client: BasePictureClient):
+        """
+        Args:
+            client(BasePictureClient): 用于执行请求的下载客户端
+        """
+        self.client = client
 
     async def download_picture(self, picture: Picture, filename: str | None = None) -> bool:
         """
@@ -118,16 +163,7 @@ class Downloader:
         Returns:
             bool: 是否成功，成功为True
         """
-        data = None
-        for i, client in enumerate(self.clients):
-            try:
-                data = await client.fetch(picture.path)
-                break
-            except HTTPError:
-                if i + 1 == len(self.clients):
-                    raise
-        if data is None:
-            return False
+        data = await self.client.fetch(picture.path)
         async with aiofiles.open(picture.originalName if filename is None else filename, 'wb') as f:
             await f.write(data)
         return True
@@ -159,7 +195,6 @@ class Downloader:
         Returns:
             list[bool | BaseException]: 对应于每张图片是否成功下载，会回复下载的错误消息
         """
-        
         p1, title = await client.pages(comic_id, order)
         picture_list = p1.docs
         tasks = [client.pages(comic_id, order, i) for i in range(2, p1.pages + 1)]

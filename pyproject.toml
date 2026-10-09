@@ -4,9 +4,9 @@ build-backend = "hatchling.build"
 
 [project]
 name = "picaapi"
-version = "1.0.1"
+version = "1.1.0"
 description = "API for PicACG"
-dependencies = ["httpx"]
+dependencies = ["httpx", "aiofiles"]
 authors = [
     {name = "TalkDe", email = "1160480410@qq.com"},
 ]

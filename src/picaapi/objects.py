@@ -86,7 +86,7 @@ class User:
         self.name: str = info['name']
         self.role: str = info['role']
         self.slogan: str = info['slogan'] if 'slogan' in info else ''
-        self.title: str = info['title']
+        self.title: str = info.get('title', '')
         self.verified: bool = info.get('verified', False)
         self.id: str = info['_id']
 
