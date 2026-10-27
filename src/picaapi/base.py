@@ -90,3 +90,17 @@ def make_headers(url_dir: str, method: str, authorization: str | None = None, qu
     if authorization is not None:
         headers['Authorization'] = authorization
     return headers
+
+
+def calculate_exp(lv: int) -> int:
+    """
+    计算至某等级所需经验。
+
+    Args:
+        lv(int): 用户等级
+
+    Returns:
+        int: 所需经验
+    """
+    if lv <= 1: return 0
+    else: return 25 * ((2 * lv - 1) ** 2 - 1)

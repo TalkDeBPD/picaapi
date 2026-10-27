@@ -77,14 +77,13 @@ class User:
     """
 
     def __init__(self, info: dict):
-        # TODO: 这个不返回avatar的情况怎么办啊
         self.avatar: Picture | None = Picture(info['avatar']) if 'avatar' in info else None
         self.characters: list[str] = info['characters']
         self.exp: int = info['exp']
         self.gender: Gender = Gender(info['gender'])
         self.level: int = info['level']
         self.name: str = info['name']
-        self.role: str = info['role']
+        self.role: str = info.get('role', 'member')
         self.slogan: str = info['slogan'] if 'slogan' in info else ''
         self.title: str = info.get('title', '')
         self.verified: bool = info.get('verified', False)

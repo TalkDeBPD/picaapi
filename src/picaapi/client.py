@@ -97,15 +97,15 @@ class Client:
         """
         await self.request('POST', 'auth/register', { 'email': email, 'password': password, 'name': name, 'gender': gender.value, 'birthday': str(birthday), 'question1': question1, 'answer1': answer1, 'question2': question2, 'answer2': answer2, 'question3': question3, 'answer3': answer3 })
 
-    async def profile(self) -> User:
+    async def profile(self) -> Profile:
         """
         获取登录用户信息。
 
         Returns:
-            User: 登录用户信息
+            Profile: 登录用户信息
         """
         response = await self.request('GET', 'users/profile')
-        return Profile(response)
+        return Profile(response['user'])
 
     async def punch_in(self) -> None:
         """

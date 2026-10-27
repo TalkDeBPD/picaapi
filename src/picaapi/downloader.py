@@ -1,6 +1,7 @@
 import asyncio
 import aiofiles
 from httpx import HTTPError
+import os
 from abc import abstractmethod, ABC
 from typing import AsyncIterator, Any
 from typing_extensions import override
@@ -151,7 +152,7 @@ class Downloader:
         """
         self.client = client
 
-    async def download_picture(self, picture: Picture, filename: str | None = None) -> bool:
+    async def download_picture(self, picture: Picture, filename: str = '') -> bool:
         """
         下载单个图片。
 
@@ -163,13 +164,27 @@ class Downloader:
             bool: 是否成功，成功为True
         """
         data = await self.client.fetch(picture.path)
-        async with aiofiles.open(picture.originalName if filename is None else filename, 'wb') as f:
+        async with aiofiles.open(filename if filename else picture.originalName, 'wb') as f:
             await f.write(data)
         return True
 
-    async def download_pictures(self, pictures:list[Picture], filename: Callable[[int, Picture], str | None]) -> tuple[BaseException | Any]:
+    async def download_picture_try(self, picture: Picture, filename: str = '') -> bool:
         """
-        批量下载图片。
+        下载单个图片。跳过已经存在的文件。
+
+        Args:
+            picture(Picture): 哔咔API图片对象
+            filename(str, optional): 保存文件路径，为空则按照picture的源名称保存
+
+        Returns:
+            bool: 是否成功，成功为True
+        """
+        if os.path.exists(filename): return True
+        return await self.download_picture(picture, filename)
+
+    async def download_pictures(self, pictures:list[Picture], filename: Callable[[int, Picture], str]) -> tuple[BaseException | Any]:
+        """
+        批量下载图片。跳过已经存在的文件。
 
         Args:
             pictures(list[Picture]): 哔咔API图片列表
@@ -178,12 +193,12 @@ class Downloader:
         Returns:
             tuple[BaseException | Any]: 对应于每张图片是否成功下载，会回复下载的错误消息
         """
-        tasks = [self.download_picture(pic, filename(i, pic)) for i, pic in enumerate(pictures)]
+        tasks = [self.download_picture_try(pic, filename(i, pic)) for i, pic in enumerate(pictures)]
         return await asyncio.gather(*tasks, return_exceptions=True)
 
-    async def download_eps(self, client: Client, comic_id: str, filename: Callable[[int, Picture], str | None], order: int = 1) -> tuple[BaseException | Any]:
+    async def download_eps(self, client: Client, comic_id: str, filename: Callable[[int, Picture], str], order: int = 1) -> tuple[BaseException | Any]:
         """
-        下载单话漫画。
+        下载单话漫画。跳过已经存在的文件。
 
         Args:
             client(Client): 用于哔咔API请求的客户端实例
