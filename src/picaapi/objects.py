@@ -3,7 +3,7 @@ from typing import TypeVar, Generic, Callable
 from .base import *
 
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 class Page(Generic[T]):
@@ -19,11 +19,23 @@ class Page(Generic[T]):
     """
 
     def __init__(self, info: dict, constructor: Callable[[dict], T]):
-        self.docs: list[T] = [constructor(i) for i in info['docs']]
-        self.page: int = int(info['page']) # 有的返回会出现字符串
-        self.pages: int = info['pages']
-        self.total: int = info['total']
-        self.limit: int = info['limit']
+        self.docs: list[T] = [constructor(i) for i in info["docs"]]
+        self.page: int = int(info["page"]) # 有的返回会出现字符串
+        self.pages: int = info["pages"]
+        self.total: int = info["total"]
+        self.limit: int = info["limit"]
+
+    def __len__(self) -> int:
+        return self.total
+
+    def __getitem__(self, index: int) -> T:
+        return self.docs[index]
+
+    def __iter__(self) -> T:
+        return iter(self.docs)
+
+    def __contains__(self, item) -> bool:
+        return item in self.docs
 
 
 class Picture:
@@ -37,11 +49,11 @@ class Picture:
     """
     
     def __init__(self, info: dict):
-        self.fileServer: str = info['fileServer']
-        self.originalName: str = info['originalName']
-        self.path: str = info['path']
+        self.fileServer: str = info["fileServer"]
+        self.originalName: str = info["originalName"]
+        self.path: str = info["path"]
     
-    def url(self, server: str = '') -> str:
+    def url(self, server: str = "") -> str:
         """
         生成指定图片服务器的URL。
 
@@ -52,9 +64,9 @@ class Picture:
             str: 指定图片服务器的URL
         """
 
-        if server == '': server = self.fileServer
-        server = server.replace('https://', '').replace('http://', '') + '/static/' + self.path
-        server = 'https://' + server.replace('//', '/')
+        if server == "": server = self.fileServer
+        server = server.replace("https://", "").replace("http://", "") + "/static/" + self.path
+        server = "https://" + server.replace("//", "/")
         return server
 
 
@@ -67,8 +79,8 @@ class ComicPicture(Picture):
     """
 
     def __init__(self, info: dict):
-        Picture.__init__(self, info['media'])
-        self.id: str = info['_id']
+        Picture.__init__(self, info["media"])
+        self.id: str = info["_id"]
 
 
 class User:
@@ -77,17 +89,17 @@ class User:
     """
 
     def __init__(self, info: dict):
-        self.avatar: Picture | None = Picture(info['avatar']) if 'avatar' in info else None
-        self.characters: list[str] = info['characters']
-        self.exp: int = info['exp']
-        self.gender: Gender = Gender(info['gender'])
-        self.level: int = info['level']
-        self.name: str = info['name']
-        self.role: str = info.get('role', 'member')
-        self.slogan: str = info['slogan'] if 'slogan' in info else ''
-        self.title: str = info.get('title', '')
-        self.verified: bool = info.get('verified', False)
-        self.id: str = info['_id']
+        self.avatar: Picture | None = Picture(info["avatar"]) if "avatar" in info else None
+        self.characters: list[str] = info["characters"]
+        self.exp: int = info["exp"]
+        self.gender: Gender = Gender(info["gender"])
+        self.level: int = info["level"]
+        self.name: str = info["name"]
+        self.role: str = info.get("role", "member")
+        self.slogan: str = info["slogan"] if "slogan" in info else ""
+        self.title: str = info.get("title", "")
+        self.verified: bool = info.get("verified", False)
+        self.id: str = info["_id"]
 
 
 class Profile(User):
@@ -97,9 +109,9 @@ class Profile(User):
 
     def __init__(self, info):
         User.__init__(self, info)
-        self.isPunched: bool = info['isPunched']
-        self.birthday: float = datetime.fromisoformat(info['birthday']).timestamp()
-        self.created_at: float = datetime.fromisoformat(info['created_at']).timestamp()
+        self.isPunched: bool = info["isPunched"]
+        self.birthday: float = datetime.fromisoformat(info["birthday"]).timestamp()
+        self.created_at: float = datetime.fromisoformat(info["created_at"]).timestamp()
 
 
 class Comment:
@@ -115,16 +127,16 @@ class Comment:
             info: (dict[str, Any]): 单条comment的JSON字典
         """
 
-        self.isTop: bool = info['isTop']
-        self.hide: bool = info['hide']
-        self.created_at: float = datetime.fromisoformat(info['created_at']).timestamp()
-        self.id: str = info['_id']
-        self.isLiked: bool = info['isLiked']
-        self.comic: str = info['_comic']
-        self.likes: int = info['likesCount']
-        self.comments: int = info.get('commentsCount', info.get('totalComments', 0))
-        self.content: str = info['content']
-        self.user: User = User(info['_user'])
+        self.isTop: bool = info["isTop"]
+        self.hide: bool = info["hide"]
+        self.created_at: float = datetime.fromisoformat(info["created_at"]).timestamp()
+        self.id: str = info["_id"]
+        self.isLiked: bool = info["isLiked"]
+        self.comic: str = info["_comic"]
+        self.likes: int = info["likesCount"]
+        self.comments: int = info.get("commentsCount", info.get("totalComments", 0))
+        self.content: str = info["content"]
+        self.user: User = User(info["_user"])
 
 
 class Comic:
@@ -146,17 +158,17 @@ class Comic:
     """
 
     def __init__(self, info: dict):
-        self.author: str = info['author']
-        self.categories: list[str] = info['categories']
-        self.finished: bool = info['finished']
-        self.likes: int = info.get('likesCount', info.get('totalLikes', 0))
-        self.tags: list[str] = info.get('tags', [])
-        self.thumb: Picture = Picture(info['thumb'])
-        self.title: str = info['title']
-        self.views: int = info.get('totalViews', 0)
-        self.pagesCount: int = info.get('pagesCount', 0)
-        self.epsCount: int = info.get('epsCount', 0)
-        self.id: str = info['_id']
+        self.author: str = info.get("author", "")
+        self.categories: list[str] = info["categories"]
+        self.finished: bool = info["finished"]
+        self.likes: int = info.get("likesCount", info.get("totalLikes", 0))
+        self.tags: list[str] = info.get("tags", [])
+        self.thumb: Picture = Picture(info["thumb"])
+        self.title: str = info["title"]
+        self.views: int = info.get("totalViews", 0)
+        self.pagesCount: int = info.get("pagesCount", 0)
+        self.epsCount: int = info.get("epsCount", 0)
+        self.id: str = info["_id"]
 
 
 class LeaderboardComic(Comic):
@@ -166,7 +178,7 @@ class LeaderboardComic(Comic):
 
     def __init__(self, info: dict):
         Comic.__init__(self, info)
-        self.leaderboardCount: int = info.get('leaderboardCount', 0)
+        self.leaderboardCount: int = info.get("leaderboardCount", 0)
 
 
 class DetailedComic(Comic):
@@ -176,14 +188,14 @@ class DetailedComic(Comic):
 
     def __init__(self, info: dict):
         Comic.__init__(self, info)
-        self.description: str = info['description']
-        self.creator: User = User(info['_creator'])
-        self.chineseTeam: str = info['chineseTeam']
-        self.updated_at: float = datetime.fromisoformat(info['updated_at']).timestamp()
-        self.created_at: float = datetime.fromisoformat(info['created_at']).timestamp()
-        self.comments: int = info.get('totalComments', 0)
-        self.isFavourite: bool = info['isFavourite']
-        self.isLiked: bool = info['isLiked']
+        self.description: str = info["description"]
+        self.creator: User = User(info["_creator"])
+        self.chineseTeam: str = info["chineseTeam"]
+        self.updated_at: float = datetime.fromisoformat(info["updated_at"]).timestamp()
+        self.created_at: float = datetime.fromisoformat(info["created_at"]).timestamp()
+        self.comments: int = info.get("totalComments", 0)
+        self.isFavourite: bool = info["isFavourite"]
+        self.isLiked: bool = info["isLiked"]
 
 
 class Eps:
@@ -192,10 +204,10 @@ class Eps:
     """
 
     def __init__(self, info: dict):
-        self.id: str = info['_id']
-        self.order: int = info['order']
-        self.title: str = info['title']
-        self.updated_at: float = datetime.fromisoformat(info['updated_at']).timestamp()
+        self.id: str = info["_id"]
+        self.order: int = info["order"]
+        self.title: str = info["title"]
+        self.updated_at: float = datetime.fromisoformat(info["updated_at"]).timestamp()
 
 
 class Category:
@@ -204,8 +216,8 @@ class Category:
     """
 
     def __init__(self, info: dict):
-        #self.active: bool = info['active']
-        self.isWeb: bool = info.get('isWeb', False)
-        self.link: str | None = info.get('link', None)
-        self.thumb: Picture = Picture(info['thumb'])
-        self.title: str = info['title']
+        #self.active: bool = info["active"]
+        self.isWeb: bool = info.get("isWeb", False)
+        self.link: str | None = info.get("link", None)
+        self.thumb: Picture = Picture(info["thumb"])
+        self.title: str = info["title"]

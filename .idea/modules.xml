@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/picaapi.iml" filepath="$PROJECT_DIR$/.idea/picaapi.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/picaapi@1.iml" filepath="$PROJECT_DIR$/.idea/picaapi@1.iml" />
     </modules>
   </component>
 </project>

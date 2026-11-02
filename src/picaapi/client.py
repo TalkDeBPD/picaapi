@@ -17,19 +17,21 @@ class Client:
         COMMENTS_BOARD(str, static): 哔咔留言板漫画ID
     """
 
-    DEFAULT_DOMAIN = 'go2778.com'
-    COMMENTS_BOARD = '5822a6e3ad7ede654696e482'
+    DEFAULT_DOMAIN = "go2778.com"
+    COMMENTS_BOARD = "5822a6e3ad7ede654696e482"
 
-    def __init__(self, domain: str = DEFAULT_DOMAIN, token: str | None = None, quality: str = 'medium', max_conn: int | None = None):
+    def __init__(self, domain: str = DEFAULT_DOMAIN, token: str | None = None, quality: str = "medium", max_conn: int | None = None, timeout: float = 10.0):
         """
         Args:
             domain(str, optional): 哔咔API域名，默认为DEFAULT_DOMAIN
             token(str, optional): 用户令牌，默认为None（未登录）
             quality(str, optional): 图像品质，默认为medium（中等）
+            max_conn(int, optional): 最大连接数
+            timeout(float, optional): 超时
         """
         self.token = token
         self.quality = quality
-        self.client: AsyncClient = AsyncClient(base_url='https://picaapi.' + domain + '/', limits=Limits(max_connections=max_conn), timeout=8.0)
+        self.client: AsyncClient = AsyncClient(base_url=f"https://picaapi.{domain}/", limits=Limits(max_connections=max_conn), timeout=timeout)
         self.closed = False
 
     async def __aenter__(self):
@@ -63,9 +65,9 @@ class Client:
         """
         response = await self.client.request(method=method, url=url, json=json, headers=make_headers(url, method, self.token, self.quality))
         json = response.json()
-        if json['code'] != 200:
-            raise PicaAPIError(response.json()['error'], response.json()['message'])
-        return json.get('data', {})
+        if json["code"] != 200:
+            raise PicaAPIError(response.json()["error"], response.json()["message"])
+        return json.get("data", {})
 
     async def login(self, email: str, password: str) -> None:
         """
@@ -75,8 +77,8 @@ class Client:
             email(str): 邮箱或用户名
             password(str): 密码
         """
-        response = await self.request('POST', 'auth/sign-in', { 'email': email, 'password': password })
-        self.token = response['token']
+        response = await self.request("POST", "auth/sign-in", { "email": email, "password": password })
+        self.token = response["token"]
 
     async def register(self, email: str, password: str, name: str, gender: Gender, birthday: date, question1: str, answer1: str, question2: str, answer2: str, question3: str, answer3: str) -> None:
         """
@@ -95,7 +97,7 @@ class Client:
             question3(str): 安全问题3
             answer3(str): 安全答案3
         """
-        await self.request('POST', 'auth/register', { 'email': email, 'password': password, 'name': name, 'gender': gender.value, 'birthday': str(birthday), 'question1': question1, 'answer1': answer1, 'question2': question2, 'answer2': answer2, 'question3': question3, 'answer3': answer3 })
+        await self.request("POST", "auth/register", { "email": email, "password": password, "name": name, "gender": gender.value, "birthday": str(birthday), "question1": question1, "answer1": answer1, "question2": question2, "answer2": answer2, "question3": question3, "answer3": answer3 })
 
     async def profile(self) -> Profile:
         """
@@ -104,14 +106,14 @@ class Client:
         Returns:
             Profile: 登录用户信息
         """
-        response = await self.request('GET', 'users/profile')
-        return Profile(response['user'])
+        response = await self.request("GET", "users/profile")
+        return Profile(response["user"])
 
     async def punch_in(self) -> None:
         """
         每日签到（打哔卡）。
         """
-        await self.request('POST', 'users/punch-in')
+        await self.request("POST", "users/punch-in")
     
     async def comic(self, comic_id: str) -> DetailedComic:
         """
@@ -123,10 +125,10 @@ class Client:
         Returns:
             DetailedComic: 漫画详细信息
         """
-        response = await self.request('GET', f'comics/{comic_id}')
-        return DetailedComic(response['comic'])
+        response = await self.request("GET", f"comics/{comic_id}")
+        return DetailedComic(response["comic"])
     
-    async def advanced_search(self, keyword: str, categories: list[str] | None = None, sort: str = 'dd', page: int = 1) -> Page:
+    async def advanced_search(self, keyword: str, categories: list[str] | None = None, sort: str = "dd", page: int = 1) -> Page:
         """
         哔咔高级搜索。
 
@@ -139,12 +141,10 @@ class Client:
         Returns:
             Page: 返回结果页，数据类型为Comic
         """
-        if categories is None:
-            categories = []
-        json_map:dict[str, str|list[str]] = { 'keyword': keyword, 'sort': sort }
-        if categories != []: json_map['categories'] = categories
-        response = await self.request('POST', f'comics/advanced-search?page={page}&s={sort}', json_map)
-        return Page(response['comics'], Comic)
+        json_map:dict[str, str|list[str]] = { "keyword": keyword, "sort": sort }
+        if categories: json_map["categories"] = categories
+        response = await self.request("POST", f"comics/advanced-search?page={page}&s={sort}", json_map)
+        return Page(response["comics"], Comic)
     
     async def comments(self, comic_id: str, page: int = 1) -> tuple[Page, list[Comment]]:
         """
@@ -158,8 +158,8 @@ class Client:
             Page: 返回结果页，数据类型为Comment
             list[Comment]: 置顶评论
         """
-        response = await self.request('GET', f'comics/{comic_id}/comments?page={page}')
-        return Page(response['comments'], Comment), [Comment(com) for com in response['topComments']]
+        response = await self.request("GET", f"comics/{comic_id}/comments?page={page}")
+        return Page(response["comments"], Comment), [Comment(com) for com in response["topComments"]]
     
     async def children(self, comment_id: str, page: int = 1) -> Page:
         """
@@ -172,10 +172,10 @@ class Client:
         Returns:
             Page: 返回结果页，数据类型为Comment
         """
-        response = await self.request('GET', f'comments/{comment_id}/children?page={page}')
-        return Page(response['comments'], Comment)
+        response = await self.request("GET", f"comments/{comment_id}/children?page={page}")
+        return Page(response["comments"], Comment)
     
-    async def favourite(self, sort: str = 'dd', page: int = 1, limit: int = 20) -> Page:
+    async def favourite(self, sort: str = "dd", page: int = 1, limit: int = 20) -> Page:
         """
         查看收藏夹。
 
@@ -187,8 +187,8 @@ class Client:
         Returns:
             Page: 返回结果页，数据类型为Comic
         """
-        response = await self.request('GET', f'users/favourite?page={page}&s={sort}&limit={limit}')
-        return Page(response['comics'], Comic)
+        response = await self.request("GET", f"users/favourite?page={page}&s={sort}&limit={limit}")
+        return Page(response["comics"], Comic)
 
     async def eps(self, comic_id: str, page: int = 1) -> Page:
         """
@@ -201,8 +201,8 @@ class Client:
         Returns:
             Page: 返回结果页，数据类型为Eps
         """
-        response = await self.request('GET', f'comics/{comic_id}/eps?page={page}')
-        return Page(response['eps'], Eps)
+        response = await self.request("GET", f"comics/{comic_id}/eps?page={page}")
+        return Page(response["eps"], Eps)
     
     async def pages(self, comic_id: str, order: int = 1, page: int = 1) -> tuple[Page[ComicPicture], str]:
         """
@@ -217,10 +217,10 @@ class Client:
             Page: 返回结果页，数据类型为ComicPicture
             str: 此话标题
         """
-        response = await self.request('GET', f'comics/{comic_id}/order/{order}/pages?page={page}')
-        return Page(response['pages'], ComicPicture), response['ep']['title']
+        response = await self.request("GET", f"comics/{comic_id}/order/{order}/pages?page={page}")
+        return Page(response["pages"], ComicPicture), response["ep"]["title"]
 
-    async def leaderboard(self, tt: str='H24') -> list[LeaderboardComic]:
+    async def leaderboard(self, tt: str="H24") -> list[LeaderboardComic]:
         """
         获取哔咔排行榜。
 
@@ -230,8 +230,8 @@ class Client:
         Returns:
             list[Comic]: 排行榜
         """
-        response = await self.request('GET', f'comics/leaderboard?tt={tt}&ct=VC')
-        return [LeaderboardComic(comic) for comic in response['comics']]
+        response = await self.request("GET", f"comics/leaderboard?tt={tt}&ct=VC")
+        return [LeaderboardComic(comic) for comic in response["comics"]]
 
     async def categories(self) -> list[Category]:
         """
@@ -240,24 +240,38 @@ class Client:
         Returns:
             list[Category]: 分类列表
         """
-        response = await self.request('GET', 'categories')
-        return [Category(cate) for cate in response['categories']]
+        response = await self.request("GET", "categories")
+        return [Category(cate) for cate in response["categories"]]
 
-    async def comics(self, key: str, value: str, sort: str = 'dd', page: int = 1) -> Page[Comic]:
+    async def comics(self, key: str = "", value: str = "", sort: str = "dd", page: int = 1) -> Page[Comic]:
         """
-        通过分类/标签/作者/汉化/骑士查询漫画
+        通过分类/标签/作者/汉化/骑士查询漫画。
 
         Args:
-            key(str): 键
-            value(str): 查询值
+            key(str, optional): 键，留空视为最新漫画
+            value(str, optional): 查询值，留空视为最新漫画
             sort(str, optional): 排序方式，默认为dd（旧到新）
             page(int, optional): 分页页码
 
         Returns:
             Page[Comic]: 查询结果
         """
-        response = await self.request('GET', f'comics?page={page}&s={sort}&{key}={parse.quote(value)}')
-        return Page(response['comics'], Comic)
+        url = f"comics?page={page}&s={sort}"
+        if key and value:
+            url += f"&{key}={parse.quote(value)}"
+        response = await self.request("GET", url)
+        return Page(response["comics"], Comic)
+
+    async def random(self) -> list[Comic]:
+        """
+        随机本子。
+
+        Returns:
+            list[Comic]: 随机本子
+        """
+        response = await self.request("GET", "comics/random")
+        print(response["comics"])
+        return [Comic(item) for item in response["comics"]]
 
     async def like_comic(self, comic_id: str) -> None:
         """
@@ -266,7 +280,7 @@ class Client:
         Args:
             comic_id(str): 漫画ID
         """
-        await self.request('POST', f'comics/{comic_id}/like')
+        await self.request("POST", f"comics/{comic_id}/like")
     
     async def favourite_comic(self, comic_id: str) -> None:
         """
@@ -275,7 +289,7 @@ class Client:
         Args:
             comic_id(str): 漫画ID
         """
-        await self.request('POST', f'comics/{comic_id}/favourite')
+        await self.request("POST", f"comics/{comic_id}/favourite")
 
     async def like_comment(self, comment_id: str) -> None:
         """
@@ -284,7 +298,7 @@ class Client:
         Args:
             comment_id(str): 评论ID
         """
-        await self.request('POST', f'comments/{comment_id}/like')
+        await self.request("POST", f"comments/{comment_id}/like")
 
     async def comment_comic(self, comic_id: str, content: str) -> None:
         """
@@ -294,7 +308,7 @@ class Client:
             comic_id(str): 漫画ID
             content(str): 评论内容
         """
-        await self.request('POST', f'comics/{comic_id}/comments', {'content': content})
+        await self.request("POST", f"comics/{comic_id}/comments", {"content": content})
     
     async def comment_comment(self, comment_id: str, content: str) -> None:
         """
@@ -304,10 +318,10 @@ class Client:
             comment_id(str): 评论ID
             content(str): 评论内容
         """
-        await self.request('POST', f'comments/{comment_id}', {'content': content})
+        await self.request("POST", f"comments/{comment_id}", {"content": content})
 
     async def status(self) -> None:
         """
         检查状态。
         """
-        await self.request('GET', 'status.json')
+        await self.request("GET", "status.json")

@@ -10,13 +10,13 @@ from .objects import Picture
 
 
 DEFAULT_HEADERS: dict[str, str] = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0',
-    'Accept': 'image/*',
-    'Accept-Encoding': 'gzip, deflate, br',
-    'Accept-Language': 'zh-CN, zh; q=0.9, en; q=0.8',
-    'Referer': 'https://manhuabika.com/',
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0",
+    "Accept": "image/*",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Accept-Language": "zh-CN, zh; q=0.9, en; q=0.8",
+    "Referer": "https://manhuabika.com/",
 }
-DEFAULT_PICTURE_SERVER: list[str] = ['https://storage-b.go2778.com/static/', 'https://storage1.go2778.com/static/']
+DEFAULT_PICTURE_SERVER: list[str] = ["https://storage-b.go2778.com/static/", "https://storage1.go2778.com/static/"]
 
 
 class BasePictureClient(ABC):
@@ -83,7 +83,7 @@ class PictureClient(BasePictureClient):
         Returns:
             AsyncIterator[bytes]: 生成器
         """
-        async with self.client.stream('GET', path) as stream:
+        async with self.client.stream("GET", path) as stream:
             stream.raise_for_status()
             async for chunk in stream.aiter_bytes(chunk_size=chunk_size):
                 yield chunk
@@ -137,7 +137,7 @@ class MultiHostPictureClient(BasePictureClient):
             for task in tasks:
                 task.cancel()
         if last_e: raise last_e
-        return b''
+        return b""
 
 
 class Downloader:
@@ -152,7 +152,7 @@ class Downloader:
         """
         self.client = client
 
-    async def download_picture(self, picture: Picture, filename: str = '') -> bool:
+    async def download_picture(self, picture: Picture, filename: str = "") -> bool:
         """
         下载单个图片。
 
@@ -164,11 +164,11 @@ class Downloader:
             bool: 是否成功，成功为True
         """
         data = await self.client.fetch(picture.path)
-        async with aiofiles.open(filename if filename else picture.originalName, 'wb') as f:
+        async with aiofiles.open(filename if filename else picture.originalName, "wb") as f:
             await f.write(data)
         return True
 
-    async def download_picture_try(self, picture: Picture, filename: str = '') -> bool:
+    async def download_picture_try(self, picture: Picture, filename: str = "") -> bool:
         """
         下载单个图片。跳过已经存在的文件。
 

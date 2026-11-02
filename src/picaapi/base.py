@@ -1,17 +1,26 @@
 import hashlib
 import random
 import time
-from enum import Enum
+from enum import StrEnum
 from importlib.util import find_spec
 
 
-HAS_BROTLI = find_spec('brotli') is not None
+HAS_BROTLI = find_spec("brotli") is not None
 
 
-class Gender(Enum):
-    MALE = 'm'
-    FEMALE = 'f'
-    BOT = 'bot'
+class Gender(StrEnum):
+    MALE = "m"
+    FEMALE = "f"
+    BOT = "bot"
+
+
+class ComicsKey(StrEnum):
+    NONE = ""
+    AUTHOR = "a"
+    CATEGORY = "c"
+    CREATOR = "ca"
+    TRANSLATOR = "ct"
+    TAG = "t"
 
 
 def random_str(length = 32) -> str:
@@ -24,8 +33,8 @@ def random_str(length = 32) -> str:
     Returns:
         str: Nonce字串
     """
-    lib = 'ABCDEFGHJKMNPQRSTWXYZabcdefhijkmnprstwxyz2345678'
-    result = ''
+    lib = "ABCDEFGHJKMNPQRSTWXYZabcdefhijkmnprstwxyz2345678"
+    result = ""
     for _ in range(0, length):
         result += lib[int(random.random() * 48)]
     return result
@@ -44,9 +53,9 @@ def make_signature(url_dir: str, stime: str, method: str, nonce: str) -> str:
     Returns:
         str: Signature签名
     """
-    ready = url_dir + stime + nonce + method + 'C69BAF41DA5ABD1FFEDC6D2FEA56B'
+    ready = url_dir + stime + nonce + method + "C69BAF41DA5ABD1FFEDC6D2FEA56B"
     rb = ready.lower().encode()
-    key = b'~d}$Q7$eIni=V)9\\RK/P.RM4;9[7|@/CA}b~OW!3?EV`:<>M7pddUBL5n|0/*Cn\0'
+    key = b"~d}$Q7$eIni=V)9\\RK/P.RM4;9[7|@/CA}b~OW!3?EV`:<>M7pddUBL5n|0/*Cn\0"
     a = bytes(92 ^ b for b in key)
     b = bytes(54 ^ b for b in key)
     c = hashlib.sha256(b + rb).digest()
@@ -54,7 +63,7 @@ def make_signature(url_dir: str, stime: str, method: str, nonce: str) -> str:
     return m.hexdigest()
 
 
-def make_headers(url_dir: str, method: str, authorization: str | None = None, quality: str = 'medium') -> dict:
+def make_headers(url_dir: str, method: str, authorization: str | None = None, quality: str = "medium") -> dict:
     """
     生成哔咔API请求头。
 
@@ -71,24 +80,24 @@ def make_headers(url_dir: str, method: str, authorization: str | None = None, qu
     nonce = random_str()
     signature = make_signature(url_dir, stime, method, nonce)
     headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0',
-        'Accept': 'application/vnd.picacomic.com.v1+json',
-        'Accept-Encoding': 'gzip, deflate, br' if HAS_BROTLI else 'gzip, deflate',
-        'Accept-Language': 'zh-CN, zh; q=0.9, en; q=0.8',
-        'App-Channel': '1',
-        'App-Platform': 'android',
-        'App-Uuid': 'webUUIDv2',
-        'App-Version': '20251017',
-        'Time': stime,
-        'Image-Quality': quality,
-        'Content-Type': 'application/json; charset=UTF-8',
-        'Nonce': nonce,
-        'Signature': signature,
-        'Origin': 'https://manhuabika.com',
-        'Referer': 'https://manhuabika.com/',
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0",
+        "Accept": "application/vnd.picacomic.com.v1+json",
+        "Accept-Encoding": "gzip, deflate, br" if HAS_BROTLI else "gzip, deflate",
+        "Accept-Language": "zh-CN, zh; q=0.9, en; q=0.8",
+        "App-Channel": "1",
+        "App-Platform": "android",
+        "App-Uuid": "webUUIDv2",
+        "App-Version": "20251017",
+        "Time": stime,
+        "Image-Quality": quality,
+        "Content-Type": "application/json; charset=UTF-8",
+        "Nonce": nonce,
+        "Signature": signature,
+        "Origin": "https://manhuabika.com",
+        "Referer": "https://manhuabika.com/",
     }
     if authorization is not None:
-        headers['Authorization'] = authorization
+        headers["Authorization"] = authorization
     return headers
 
 
